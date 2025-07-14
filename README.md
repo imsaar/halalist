@@ -12,7 +12,7 @@ A mobile-friendly web application that helps identify suspicious or prohibited i
 - 📝 **Customizable Lists** - Add or remove ingredients from your watch lists
 - 💾 **Local Storage** - Your custom ingredient lists are saved locally
 - 🎨 **Multiple Processing Modes** - Different image enhancement options for better OCR results
-- 🟢 **Pakistan-Themed Design** - Features a green color scheme inspired by the Pakistan flag
+- 🟢 **Green Theme Design** - Features a distinctive green color scheme
 - 📖 **Smart Instructions** - Context-aware help that appears when needed
 
 ## Quick Start
@@ -43,24 +43,30 @@ A mobile-friendly web application that helps identify suspicious or prohibited i
 
 ## Default Ingredient Lists
 
-### Suspicious Ingredients
-- High fructose corn syrup
-- MSG (Monosodium glutamate)
-- Artificial sweeteners (Aspartame, Sucralose)
-- Artificial colors (Red 40, Yellow 5, Blue 1)
-- Preservatives (BHA, BHT, Sodium nitrite)
-- Carrageenan
-- Propylene glycol
+### Suspicious Ingredients (May contain haram elements)
+- Butter cream (may contain lard)
+- Mono and diglycerides (may be from animal fat)
+- Emulsifiers (source unknown)
+- Enzymes (may be from pork)
+- Rennet (may be from non-halal animals)
+- Whey/Casein (processing concerns)
+- L-cysteine (often from human hair or duck feathers)
+- Glycerin/Glycerol (may be from animal fat)
+- Stearic acid/Magnesium stearate (may be from animal fat)
+- Carmine/Cochineal (from insects)
+- Shellac/Confectioner's glaze (from insects)
+- Various preservatives and additives
 
-### Prohibited Ingredients (Common Allergens)
-- Peanuts
-- Tree nuts
-- Shellfish
-- Gluten
-- Lactose
-- Eggs
-- Soy
-- Sulfites
+### Prohibited Ingredients (Haram)
+- Pork and pork products (bacon, ham, lard)
+- Gelatin (unless specified halal)
+- Alcohol in all forms (ethanol, wine, beer, spirits)
+- Vanilla extract (contains alcohol)
+- Grape juice from concentrate (may contain alcohol from fermentation)
+- Cooking wine/Rice wine/Mirin
+- Animal-derived ingredients (pepsin, pancreatin)
+- Animal fats/shortening (unless halal certified)
+- Tallow/Suet (animal fat)
 
 ## Customization
 
@@ -111,7 +117,7 @@ All changes are saved automatically to your browser's local storage.
 ## Recent Updates
 
 - **App Rebranding** - Now called "Halalist" with subtitle "Ingredient Scanner"
-- **Pakistan Theme** - Green color scheme (#01411C) inspired by Pakistan flag
+- **Green Theme** - Distinctive green color scheme (#01411C)
 - **Improved UX** - Instructions hide after scanning, contextual help for processing modes
 - **Better Image Handling** - Fixed black image issues with improved loading process
 - **Enhanced Cropping** - Original image shown during selection for accuracy

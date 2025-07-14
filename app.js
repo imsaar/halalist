@@ -1,6 +1,23 @@
 class IngredientScanner {
     constructor() {
-        this.suspiciousIngredients = this.loadFromStorage('suspiciousIngredients') || [
+        // Define default lists first
+        this.defaultSuspicious = [
+            'butter cream',
+            'mono and diglycerides',
+            'emulsifiers',
+            'enzymes',
+            'rennet',
+            'whey',
+            'casein',
+            'l-cysteine',
+            'glycerin',
+            'glycerol',
+            'stearic acid',
+            'magnesium stearate',
+            'carmine',
+            'cochineal',
+            'shellac',
+            'confectioner\'s glaze',
             'high fructose corn syrup',
             'msg',
             'monosodium glutamate',
@@ -17,16 +34,51 @@ class IngredientScanner {
             'carrageenan'
         ];
         
-        this.prohibitedIngredients = this.loadFromStorage('prohibitedIngredients') || [
-            'peanuts',
-            'tree nuts',
-            'shellfish',
-            'gluten',
-            'lactose',
-            'eggs',
-            'soy',
-            'sulfites'
+        this.defaultProhibited = [
+            'pork',
+            'bacon',
+            'ham',
+            'lard',
+            'gelatin',
+            'pork gelatin',
+            'beef gelatin',
+            'alcohol',
+            'ethanol',
+            'ethyl alcohol',
+            'wine',
+            'beer',
+            'rum',
+            'bourbon',
+            'vodka',
+            'whiskey',
+            'cooking wine',
+            'rice wine',
+            'mirin',
+            'vanilla extract',
+            'grape juice from concentrate',
+            'pepsin',
+            'pancreatin',
+            'animal shortening',
+            'animal fat',
+            'tallow',
+            'suet'
         ];
+        
+        // Load from localStorage or use defaults
+        const storedSuspicious = this.loadFromStorage('suspiciousIngredients');
+        const storedProhibited = this.loadFromStorage('prohibitedIngredients');
+        
+        // If localStorage exists, use it; otherwise use defaults
+        this.suspiciousIngredients = storedSuspicious ? [...storedSuspicious] : [...this.defaultSuspicious];
+        this.prohibitedIngredients = storedProhibited ? [...storedProhibited] : [...this.defaultProhibited];
+        
+        // Save defaults to localStorage if this is first time
+        if (!storedSuspicious) {
+            this.saveToStorage('suspiciousIngredients', this.suspiciousIngredients);
+        }
+        if (!storedProhibited) {
+            this.saveToStorage('prohibitedIngredients', this.prohibitedIngredients);
+        }
         
         this.initializeElements();
         this.attachEventListeners();
@@ -70,35 +122,6 @@ class IngredientScanner {
         this.isSelecting = false;
         this.startX = 0;
         this.startY = 0;
-        
-        // Store default lists
-        this.defaultSuspicious = [
-            'high fructose corn syrup',
-            'msg',
-            'monosodium glutamate',
-            'aspartame',
-            'sucralose',
-            'artificial colors',
-            'red 40',
-            'yellow 5',
-            'blue 1',
-            'sodium nitrite',
-            'bha',
-            'bht',
-            'propylene glycol',
-            'carrageenan'
-        ];
-        
-        this.defaultProhibited = [
-            'peanuts',
-            'tree nuts',
-            'shellfish',
-            'gluten',
-            'lactose',
-            'eggs',
-            'soy',
-            'sulfites'
-        ];
     }
     
     attachEventListeners() {
