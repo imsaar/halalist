@@ -671,11 +671,13 @@ class IngredientScanner {
     
     resetToDefaults() {
         if (confirm('Are you sure you want to reset to the default ingredient lists? This will remove all your custom additions.')) {
+            // Delete localStorage entries
+            localStorage.removeItem('suspiciousIngredients');
+            localStorage.removeItem('prohibitedIngredients');
+            
+            // Reset to defaults
             this.suspiciousIngredients = [...this.defaultSuspicious];
             this.prohibitedIngredients = [...this.defaultProhibited];
-            
-            this.saveToStorage('suspiciousIngredients', this.suspiciousIngredients);
-            this.saveToStorage('prohibitedIngredients', this.prohibitedIngredients);
             
             this.renderIngredientLists();
             alert('Ingredient lists have been reset to defaults.');
