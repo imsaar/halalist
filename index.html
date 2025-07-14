@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ingredient Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ingredient Scanner</h1>
+            <button class="settings-btn" id="settingsBtn">⚙️</button>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <input type="file" id="imageInput" accept="image/*" capture="environment" style="display: none;">
+                <button class="upload-btn" id="uploadBtn">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    <span>Take or Upload Photo</span>
+                </button>
+            </div>
+
+            <div id="imagePreview" class="image-preview hidden">
+                <div class="image-container">
+                    <img id="previewImg" alt="Ingredient photo">
+                    <canvas id="cropCanvas" class="crop-canvas"></canvas>
+                </div>
+                <button class="close-btn" id="closePreview">✕</button>
+                <div class="image-controls">
+                    <button class="crop-btn" id="cropBtn">✂️ Select Area</button>
+                    <button class="scan-btn hidden" id="scanCropBtn">Scan Selected Area</button>
+                    <button class="reset-btn hidden" id="resetCropBtn">Reset</button>
+                    <label class="hidden" id="processedToggle">
+                        <input type="checkbox" id="showProcessed">
+                        Show processed
+                    </label>
+                </div>
+            </div>
+
+            <div id="scanResults" class="scan-results hidden">
+                <h2>Scan Results</h2>
+                <div id="extractedText" class="extracted-text"></div>
+                <div id="detectedIngredients" class="detected-ingredients"></div>
+                <button class="rescan-btn" id="rescanBtn">Try Different Processing</button>
+                <div class="processing-info">
+                    <small id="processingMode">Mode: Mild Enhancement</small>
+                </div>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Scanning ingredients...</p>
+            </div>
+        </main>
+
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Manage Ingredient Lists</h2>
+                    <button class="close-btn" id="closeSettings">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-section">
+                        <h3>Suspicious Ingredients</h3>
+                        <div class="ingredient-list" id="suspiciousList"></div>
+                        <div class="add-ingredient">
+                            <input type="text" id="suspiciousInput" placeholder="Add ingredient...">
+                            <button id="addSuspicious">Add</button>
+                        </div>
+                    </div>
+                    <div class="list-section">
+                        <h3>Prohibited Ingredients</h3>
+                        <div class="ingredient-list" id="prohibitedList"></div>
+                        <div class="add-ingredient">
+                            <input type="text" id="prohibitedInput" placeholder="Add ingredient...">
+                            <button id="addProhibited">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
