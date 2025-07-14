@@ -1,11 +1,11 @@
 {
-    "name": "Ingredient Scanner",
-    "short_name": "IngredientScan",
+    "name": "Halalist - Ingredient Scanner",
+    "short_name": "Halalist",
     "description": "Scan food packaging to identify suspicious and prohibited ingredients",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#2196F3",
+    "theme_color": "#01411C",
     "orientation": "portrait",
     "icons": [
         {

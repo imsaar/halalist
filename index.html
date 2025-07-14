@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ingredient Scanner</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Halalist - Ingredient Scanner</title>
+    <link rel="stylesheet" href="styles.css?v=3">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2196F3">
+    <meta name="theme-color" content="#01411C">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Ingredient Scanner</h1>
+            <div class="header-content">
+                <h1>Halalist</h1>
+                <p class="subtitle">Ingredient Scanner</p>
+            </div>
             <button class="settings-btn" id="settingsBtn">⚙️</button>
         </header>
 
@@ -44,6 +47,17 @@
                 </div>
             </div>
 
+            <div class="instructions" id="instructions">
+                <h2>How to Use</h2>
+                <ol>
+                    <li>✂️ <strong>Click "Select Area"</strong> above to mark the ingredients section</li>
+                    <li>📱 <strong>Draw a rectangle</strong> around the ingredients text</li>
+                    <li>🔍 <strong>Click "Scan Selected Area"</strong> to detect ingredients</li>
+                    <li>🔄 <strong>Try different processing</strong> if results aren't clear</li>
+                </ol>
+                <p class="tip">💡 <strong>Tip:</strong> Crop tightly around just the ingredients list for best results</p>
+            </div>
+
             <div id="scanResults" class="scan-results hidden">
                 <h2>Scan Results</h2>
                 <div id="extractedText" class="extracted-text"></div>
@@ -51,6 +65,16 @@
                 <button class="rescan-btn" id="rescanBtn">Try Different Processing</button>
                 <div class="processing-info">
                     <small id="processingMode">Mode: Mild Enhancement</small>
+                </div>
+                <div class="processing-help">
+                    <p><strong>Not getting good results?</strong></p>
+                    <p>Click "Try Different Processing" to cycle through enhancement modes:</p>
+                    <ul>
+                        <li><strong>Mild Enhancement</strong> - Gentle contrast boost (default)</li>
+                        <li><strong>Sharpen Filter</strong> - For blurry text</li>
+                        <li><strong>Adaptive Threshold</strong> - For low contrast labels</li>
+                        <li><strong>High Resolution</strong> - Minimal processing</li>
+                    </ul>
                 </div>
             </div>
 
@@ -67,6 +91,9 @@
                     <button class="close-btn" id="closeSettings">✕</button>
                 </div>
                 <div class="modal-body">
+                    <div class="default-info">
+                        <p><strong>Note:</strong> The app comes with default lists of common suspicious ingredients (artificial additives, preservatives) and prohibited ingredients (common allergens). You can add or remove items as needed.</p>
+                    </div>
                     <div class="list-section">
                         <h3>Suspicious Ingredients</h3>
                         <div class="ingredient-list" id="suspiciousList"></div>
@@ -82,6 +109,9 @@
                             <input type="text" id="prohibitedInput" placeholder="Add ingredient...">
                             <button id="addProhibited">Add</button>
                         </div>
+                    </div>
+                    <div class="reset-section">
+                        <button class="reset-defaults-btn" id="resetDefaults">Reset to Default Lists</button>
                     </div>
                 </div>
             </div>

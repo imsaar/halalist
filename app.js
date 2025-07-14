@@ -60,6 +60,8 @@ class IngredientScanner {
         this.resetCropBtn = document.getElementById('resetCropBtn');
         this.processedToggle = document.getElementById('processedToggle');
         this.processingModeText = document.getElementById('processingMode');
+        this.resetDefaultsBtn = document.getElementById('resetDefaults');
+        this.instructions = document.getElementById('instructions');
         this.originalImage = null;
         this.processedImage = null;
         this.croppedOriginal = null;
@@ -68,6 +70,35 @@ class IngredientScanner {
         this.isSelecting = false;
         this.startX = 0;
         this.startY = 0;
+        
+        // Store default lists
+        this.defaultSuspicious = [
+            'high fructose corn syrup',
+            'msg',
+            'monosodium glutamate',
+            'aspartame',
+            'sucralose',
+            'artificial colors',
+            'red 40',
+            'yellow 5',
+            'blue 1',
+            'sodium nitrite',
+            'bha',
+            'bht',
+            'propylene glycol',
+            'carrageenan'
+        ];
+        
+        this.defaultProhibited = [
+            'peanuts',
+            'tree nuts',
+            'shellfish',
+            'gluten',
+            'lactose',
+            'eggs',
+            'soy',
+            'sulfites'
+        ];
     }
     
     attachEventListeners() {
@@ -104,6 +135,7 @@ class IngredientScanner {
         this.cropBtn.addEventListener('click', () => this.startCropSelection());
         this.scanCropBtn.addEventListener('click', () => this.scanCroppedArea());
         this.resetCropBtn.addEventListener('click', () => this.resetCrop());
+        this.resetDefaultsBtn.addEventListener('click', () => this.resetToDefaults());
         
         this.cropCanvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
         this.cropCanvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
@@ -144,6 +176,7 @@ class IngredientScanner {
             this.previewImg.src = imageUrl;
             this.imagePreview.classList.remove('hidden');
             this.scanResults.classList.add('hidden');
+            this.instructions.classList.remove('hidden');
             
             // Convert to data URL for processing later
             const canvas = document.createElement('canvas');
@@ -396,7 +429,7 @@ class IngredientScanner {
         
         ctx.clearRect(x, y, width, height);
         
-        ctx.strokeStyle = '#2196F3';
+        ctx.strokeStyle = '#01411C';
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, width, height);
     }
@@ -435,6 +468,9 @@ class IngredientScanner {
             const text = await this.extractTextFromImage(this.processedImage);
             this.processExtractedText(text);
             this.scanResults.classList.remove('hidden');
+            
+            // Hide instructions when showing results
+            this.instructions.classList.add('hidden');
         } catch (error) {
             console.error('Error processing image:', error);
             alert('Error processing image. Please try again.');
@@ -485,11 +521,17 @@ class IngredientScanner {
         this.cropArea = null;
         this.previewImg.src = this.originalImage;
         this.showProcessed.checked = true;
+        
+        // Show instructions again when resetting
+        if (this.originalImage) {
+            this.instructions.classList.remove('hidden');
+        }
     }
     
     clearResults() {
         this.imagePreview.classList.add('hidden');
         this.scanResults.classList.add('hidden');
+        this.instructions.classList.add('hidden');
         this.imageInput.value = '';
         this.originalImage = null;
         this.processedImage = null;
@@ -602,6 +644,19 @@ class IngredientScanner {
     loadFromStorage(key) {
         const data = localStorage.getItem(key);
         return data ? JSON.parse(data) : null;
+    }
+    
+    resetToDefaults() {
+        if (confirm('Are you sure you want to reset to the default ingredient lists? This will remove all your custom additions.')) {
+            this.suspiciousIngredients = [...this.defaultSuspicious];
+            this.prohibitedIngredients = [...this.defaultProhibited];
+            
+            this.saveToStorage('suspiciousIngredients', this.suspiciousIngredients);
+            this.saveToStorage('prohibitedIngredients', this.prohibitedIngredients);
+            
+            this.renderIngredientLists();
+            alert('Ingredient lists have been reset to defaults.');
+        }
     }
 }
 
