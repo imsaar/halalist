@@ -83,6 +83,7 @@ class IngredientScanner {
         this.initializeElements();
         this.attachEventListeners();
         this.renderIngredientLists();
+        
     }
     
     initializeElements() {
@@ -319,17 +320,11 @@ class IngredientScanner {
         const detectedSuspicious = [];
         const detectedProhibited = [];
         
-        // Normalize text by removing extra spaces and line breaks
-        const lowerText = text.toLowerCase().replace(/\s+/g, ' ');
-        
-        // Debug: Check for vanilla extract specifically
-        console.log('Checking for vanilla extract...');
-        console.log('Text contains "vanilla":', lowerText.includes('vanilla'));
-        console.log('Text contains "extract":', lowerText.includes('extract'));
-        
         this.suspiciousIngredients.forEach(ingredient => {
-            // Create a flexible pattern that allows for spaces/line breaks
-            const pattern = ingredient.toLowerCase().split(' ').join('\\s+');
+            // Create a flexible pattern that allows for spaces/line breaks and OCR errors
+            const words = ingredient.toLowerCase().split(' ');
+            // Allow up to 3 characters (including spaces, punctuation) between words for OCR errors
+            const pattern = words.join('\\s*.{0,3}\\s*');
             const regex = new RegExp(pattern, 'i');
             if (regex.test(text)) {
                 detectedSuspicious.push(ingredient);
@@ -337,8 +332,10 @@ class IngredientScanner {
         });
         
         this.prohibitedIngredients.forEach(ingredient => {
-            // Create a flexible pattern that allows for spaces/line breaks
-            const pattern = ingredient.toLowerCase().split(' ').join('\\s+');
+            // Create a flexible pattern that allows for spaces/line breaks and OCR errors
+            const words = ingredient.toLowerCase().split(' ');
+            // Allow up to 3 characters (including spaces, punctuation) between words for OCR errors
+            const pattern = words.join('\\s*.{0,3}\\s*');
             const regex = new RegExp(pattern, 'i');
             if (regex.test(text)) {
                 detectedProhibited.push(ingredient);
