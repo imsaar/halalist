@@ -170,9 +170,10 @@ class IngredientScanner {
         this.cropCanvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
         this.cropCanvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
         
-        this.cropCanvas.addEventListener('touchstart', (e) => this.onTouchStart(e));
-        this.cropCanvas.addEventListener('touchmove', (e) => this.onTouchMove(e));
-        this.cropCanvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
+        this.cropCanvas.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
+        this.cropCanvas.addEventListener('touchmove', (e) => this.onTouchMove(e), {passive: false});
+        this.cropCanvas.addEventListener('touchend', (e) => this.onTouchEnd(e), {passive: false});
+        this.cropCanvas.addEventListener('touchcancel', (e) => this.onTouchEnd(e), {passive: false});
     }
     
     async handleImageUpload(event) {
@@ -478,7 +479,7 @@ class IngredientScanner {
     }
     
     onTouchMove(e) {
-        if (!this.isSelecting) return;
+        if (!this.isSelecting && !this.isDragging && !this.isResizing) return;
         e.preventDefault();
         const touch = e.touches[0];
         const mouseEvent = new MouseEvent('mousemove', {
@@ -489,7 +490,7 @@ class IngredientScanner {
     }
     
     onTouchEnd(e) {
-        if (!this.isSelecting) return;
+        if (!this.isSelecting && !this.isDragging && !this.isResizing) return;
         e.preventDefault();
         const touch = e.changedTouches[0];
         const mouseEvent = new MouseEvent('mouseup', {
