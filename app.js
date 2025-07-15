@@ -104,13 +104,11 @@ class IngredientScanner {
         this.prohibitedInput = document.getElementById('prohibitedInput');
         this.addSuspicious = document.getElementById('addSuspicious');
         this.addProhibited = document.getElementById('addProhibited');
-        this.showProcessed = document.getElementById('showProcessed');
         this.rescanBtn = document.getElementById('rescanBtn');
         this.cropCanvas = document.getElementById('cropCanvas');
         this.cropBtn = document.getElementById('cropBtn');
         this.scanCropBtn = document.getElementById('scanCropBtn');
         this.resetCropBtn = document.getElementById('resetCropBtn');
-        this.processedToggle = document.getElementById('processedToggle');
         this.processingModeText = document.getElementById('processingMode');
         this.resetDefaultsBtn = document.getElementById('resetDefaults');
         this.instructions = document.getElementById('instructions');
@@ -151,13 +149,6 @@ class IngredientScanner {
             if (e.target === this.settingsModal) this.closeSettingsModal();
         });
         
-        this.showProcessed.addEventListener('change', (e) => {
-            if (this.cropArea && this.croppedOriginal) {
-                this.previewImg.src = e.target.checked ? this.processedImage : this.croppedOriginal;
-            } else if (this.processedImage) {
-                this.previewImg.src = e.target.checked ? this.processedImage : this.originalImage;
-            }
-        });
         
         this.rescanBtn.addEventListener('click', () => this.rescanWithDifferentMode());
         
@@ -191,8 +182,6 @@ class IngredientScanner {
         this.croppedOriginal = null;
         this.processingMode = 0;
         this.cropArea = null;
-        this.showProcessed.checked = false;
-        this.processedToggle.classList.add('hidden');
         
         // Create object URL for the image
         const imageUrl = URL.createObjectURL(file);
@@ -330,16 +319,28 @@ class IngredientScanner {
         const detectedSuspicious = [];
         const detectedProhibited = [];
         
-        const lowerText = text.toLowerCase();
+        // Normalize text by removing extra spaces and line breaks
+        const lowerText = text.toLowerCase().replace(/\s+/g, ' ');
+        
+        // Debug: Check for vanilla extract specifically
+        console.log('Checking for vanilla extract...');
+        console.log('Text contains "vanilla":', lowerText.includes('vanilla'));
+        console.log('Text contains "extract":', lowerText.includes('extract'));
         
         this.suspiciousIngredients.forEach(ingredient => {
-            if (lowerText.includes(ingredient.toLowerCase())) {
+            // Create a flexible pattern that allows for spaces/line breaks
+            const pattern = ingredient.toLowerCase().split(' ').join('\\s+');
+            const regex = new RegExp(pattern, 'i');
+            if (regex.test(text)) {
                 detectedSuspicious.push(ingredient);
             }
         });
         
         this.prohibitedIngredients.forEach(ingredient => {
-            if (lowerText.includes(ingredient.toLowerCase())) {
+            // Create a flexible pattern that allows for spaces/line breaks
+            const pattern = ingredient.toLowerCase().split(' ').join('\\s+');
+            const regex = new RegExp(pattern, 'i');
+            if (regex.test(text)) {
                 detectedProhibited.push(ingredient);
             }
         });
@@ -695,7 +696,6 @@ class IngredientScanner {
         }
         
         this.loading.classList.remove('hidden');
-        this.processedToggle.classList.remove('hidden');
         
         try {
             // First crop the original image
@@ -707,12 +707,8 @@ class IngredientScanner {
             // Apply preprocessing to the cropped image
             this.processedImage = await this.preprocessImage(croppedImage);
             
-            // Show processed or original based on checkbox
-            if (this.showProcessed.checked) {
-                this.previewImg.src = this.processedImage;
-            } else {
-                this.previewImg.src = this.croppedOriginal;
-            }
+            // Always show processed image
+            this.previewImg.src = this.processedImage;
             
             // Hide the crop canvas after cropping
             this.cropCanvas.classList.remove('active');
@@ -769,12 +765,10 @@ class IngredientScanner {
         this.cropBtn.classList.remove('hidden');
         this.scanCropBtn.classList.add('hidden');
         this.resetCropBtn.classList.add('hidden');
-        this.processedToggle.classList.add('hidden');
         const ctx = this.cropCanvas.getContext('2d');
         ctx.clearRect(0, 0, this.cropCanvas.width, this.cropCanvas.height);
         this.cropArea = null;
         this.previewImg.src = this.originalImage;
-        this.showProcessed.checked = true;
         
         // Show instructions again when resetting
         if (this.originalImage) {
@@ -790,7 +784,6 @@ class IngredientScanner {
         this.originalImage = null;
         this.processedImage = null;
         this.croppedOriginal = null;
-        this.showProcessed.checked = true;
         this.processingMode = 0;
         this.cropArea = null;
         this.resetCrop();
@@ -809,9 +802,7 @@ class IngredientScanner {
             const sourceImage = this.croppedOriginal || this.originalImage;
             this.processedImage = await this.preprocessImage(sourceImage);
             
-            if (this.showProcessed.checked) {
-                this.previewImg.src = this.processedImage;
-            }
+            this.previewImg.src = this.processedImage;
             
             const text = await this.extractTextFromImage(this.processedImage);
             this.processExtractedText(text);
