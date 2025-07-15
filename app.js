@@ -151,6 +151,21 @@ class IngredientScanner {
         this.resetCropBtn.addEventListener('click', () => this.resetCrop());
         this.resetDefaultsBtn.addEventListener('click', () => this.resetToDefaults());
         
+        // Start crop selection when image is clicked
+        this.previewImg.addEventListener('click', () => {
+            if (!this.cropCanvas.classList.contains('active')) {
+                this.startCropSelection();
+            }
+        });
+        
+        // Also handle touch events for mobile
+        this.previewImg.addEventListener('touchend', (e) => {
+            if (!this.cropCanvas.classList.contains('active')) {
+                e.preventDefault(); // Prevent double-firing with click
+                this.startCropSelection();
+            }
+        });
+        
         this.cropCanvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
         this.cropCanvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
         this.cropCanvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
