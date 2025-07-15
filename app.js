@@ -513,6 +513,12 @@ class IngredientScanner {
         
         ctx.clearRect(x, y, width, height);
         
+        // Draw white border first for better visibility
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(x, y, width, height);
+        
+        // Then draw colored border
         ctx.strokeStyle = '#01411C';
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, width, height);
@@ -520,6 +526,15 @@ class IngredientScanner {
         // Don't draw handles during active selection
         if (!this.isSelecting && width > 0 && height > 0) {
             this.drawResizeHandles(ctx, x, y, width, height);
+            
+            // Add instruction text for mobile
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            if (isTouchDevice && width > 100 && height > 60) {
+                ctx.font = '14px system-ui, -apple-system, sans-serif';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.fillText('Drag to move • Handles to resize', x + width/2, y + height/2);
+            }
         }
     }
     
@@ -534,7 +549,9 @@ class IngredientScanner {
     }
     
     drawResizeHandles(ctx, x, y, width, height) {
-        const handleSize = 8;
+        // Detect if touch device
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const handleSize = isTouchDevice ? 16 : 8; // Larger handles for touch
         const handles = [
             {x: x, y: y}, // top-left
             {x: x + width/2, y: y}, // top-center
@@ -546,8 +563,18 @@ class IngredientScanner {
             {x: x, y: y + height/2} // middle-left
         ];
         
-        ctx.fillStyle = '#01411C';
         handles.forEach(handle => {
+            // White background for better visibility
+            ctx.fillStyle = 'white';
+            ctx.fillRect(
+                handle.x - handleSize/2 - 1,
+                handle.y - handleSize/2 - 1,
+                handleSize + 2,
+                handleSize + 2
+            );
+            
+            // Handle with border
+            ctx.fillStyle = '#01411C';
             ctx.fillRect(
                 handle.x - handleSize/2,
                 handle.y - handleSize/2,
@@ -560,7 +587,8 @@ class IngredientScanner {
     getResizeHandle(x, y) {
         if (!this.cropArea) return null;
         
-        const handleSize = 12; // Slightly larger hit area
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const handleSize = isTouchDevice ? 24 : 12; // Much larger hit area for touch
         const half = handleSize / 2;
         const {x: sx, y: sy, width, height} = this.cropArea;
         
@@ -608,7 +636,8 @@ class IngredientScanner {
     }
     
     resizeSelection(currentX, currentY) {
-        const minSize = 20;
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const minSize = isTouchDevice ? 40 : 20; // Larger minimum size for touch
         let {x, y, width, height} = this.initialCropArea;
         
         switch (this.resizeHandle) {
