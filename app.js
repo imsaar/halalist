@@ -120,8 +120,14 @@ class IngredientScanner {
         this.processingMode = 0;
         this.cropArea = null;
         this.isSelecting = false;
+        this.isDragging = false;
+        this.isResizing = false;
+        this.resizeHandle = null;
         this.startX = 0;
         this.startY = 0;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.initialCropArea = null;
     }
     
     attachEventListeners() {
@@ -376,33 +382,88 @@ class IngredientScanner {
     
     onMouseDown(e) {
         if (!this.cropCanvas.classList.contains('active')) return;
-        this.isSelecting = true;
         const rect = this.cropCanvas.getBoundingClientRect();
-        this.startX = e.clientX - rect.left;
-        this.startY = e.clientY - rect.top;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Check if clicking on existing selection for drag/resize
+        if (this.cropArea) {
+            const handle = this.getResizeHandle(x, y);
+            if (handle) {
+                this.isResizing = true;
+                this.resizeHandle = handle;
+                this.initialCropArea = {...this.cropArea};
+            } else if (this.isInsideSelection(x, y)) {
+                this.isDragging = true;
+                this.dragStartX = x - this.cropArea.x;
+                this.dragStartY = y - this.cropArea.y;
+            } else {
+                // Start new selection
+                this.isSelecting = true;
+                this.startX = x;
+                this.startY = y;
+                this.cropArea = null;
+            }
+        } else {
+            // Start new selection
+            this.isSelecting = true;
+            this.startX = x;
+            this.startY = y;
+        }
     }
     
     onMouseMove(e) {
-        if (!this.isSelecting) return;
         const rect = this.cropCanvas.getBoundingClientRect();
         const currentX = e.clientX - rect.left;
         const currentY = e.clientY - rect.top;
-        this.drawSelection(this.startX, this.startY, currentX, currentY);
+        
+        // Update cursor based on position
+        if (!this.isSelecting && !this.isDragging && !this.isResizing && this.cropArea) {
+            const handle = this.getResizeHandle(currentX, currentY);
+            if (handle) {
+                this.cropCanvas.style.cursor = this.getCursorForHandle(handle);
+            } else if (this.isInsideSelection(currentX, currentY)) {
+                this.cropCanvas.style.cursor = 'move';
+            } else {
+                this.cropCanvas.style.cursor = 'crosshair';
+            }
+        }
+        
+        if (this.isSelecting) {
+            this.drawSelection(this.startX, this.startY, currentX, currentY);
+        } else if (this.isDragging) {
+            const newX = Math.max(0, Math.min(currentX - this.dragStartX, this.cropCanvas.width - this.cropArea.width));
+            const newY = Math.max(0, Math.min(currentY - this.dragStartY, this.cropCanvas.height - this.cropArea.height));
+            this.cropArea.x = newX;
+            this.cropArea.y = newY;
+            this.redrawSelection();
+        } else if (this.isResizing) {
+            this.resizeSelection(currentX, currentY);
+        }
     }
     
     onMouseUp(e) {
-        if (!this.isSelecting) return;
-        this.isSelecting = false;
-        const rect = this.cropCanvas.getBoundingClientRect();
-        const endX = e.clientX - rect.left;
-        const endY = e.clientY - rect.top;
+        if (this.isSelecting) {
+            this.isSelecting = false;
+            const rect = this.cropCanvas.getBoundingClientRect();
+            const endX = e.clientX - rect.left;
+            const endY = e.clientY - rect.top;
+            
+            this.cropArea = {
+                x: Math.min(this.startX, endX),
+                y: Math.min(this.startY, endY),
+                width: Math.abs(endX - this.startX),
+                height: Math.abs(endY - this.startY)
+            };
+            
+            // Redraw to show handles
+            this.redrawSelection();
+        }
         
-        this.cropArea = {
-            x: Math.min(this.startX, endX),
-            y: Math.min(this.startY, endY),
-            width: Math.abs(endX - this.startX),
-            height: Math.abs(endY - this.startY)
-        };
+        this.isDragging = false;
+        this.isResizing = false;
+        this.resizeHandle = null;
+        this.cropCanvas.style.cursor = 'crosshair';
     }
     
     onTouchStart(e) {
@@ -455,6 +516,146 @@ class IngredientScanner {
         ctx.strokeStyle = '#01411C';
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, width, height);
+        
+        // Don't draw handles during active selection
+        if (!this.isSelecting && width > 0 && height > 0) {
+            this.drawResizeHandles(ctx, x, y, width, height);
+        }
+    }
+    
+    redrawSelection() {
+        if (!this.cropArea) return;
+        this.drawSelection(
+            this.cropArea.x,
+            this.cropArea.y,
+            this.cropArea.x + this.cropArea.width,
+            this.cropArea.y + this.cropArea.height
+        );
+    }
+    
+    drawResizeHandles(ctx, x, y, width, height) {
+        const handleSize = 8;
+        const handles = [
+            {x: x, y: y}, // top-left
+            {x: x + width/2, y: y}, // top-center
+            {x: x + width, y: y}, // top-right
+            {x: x + width, y: y + height/2}, // middle-right
+            {x: x + width, y: y + height}, // bottom-right
+            {x: x + width/2, y: y + height}, // bottom-center
+            {x: x, y: y + height}, // bottom-left
+            {x: x, y: y + height/2} // middle-left
+        ];
+        
+        ctx.fillStyle = '#01411C';
+        handles.forEach(handle => {
+            ctx.fillRect(
+                handle.x - handleSize/2,
+                handle.y - handleSize/2,
+                handleSize,
+                handleSize
+            );
+        });
+    }
+    
+    getResizeHandle(x, y) {
+        if (!this.cropArea) return null;
+        
+        const handleSize = 12; // Slightly larger hit area
+        const half = handleSize / 2;
+        const {x: sx, y: sy, width, height} = this.cropArea;
+        
+        const handles = [
+            {name: 'nw', x: sx, y: sy},
+            {name: 'n', x: sx + width/2, y: sy},
+            {name: 'ne', x: sx + width, y: sy},
+            {name: 'e', x: sx + width, y: sy + height/2},
+            {name: 'se', x: sx + width, y: sy + height},
+            {name: 's', x: sx + width/2, y: sy + height},
+            {name: 'sw', x: sx, y: sy + height},
+            {name: 'w', x: sx, y: sy + height/2}
+        ];
+        
+        for (const handle of handles) {
+            if (x >= handle.x - half && x <= handle.x + half &&
+                y >= handle.y - half && y <= handle.y + half) {
+                return handle.name;
+            }
+        }
+        
+        return null;
+    }
+    
+    getCursorForHandle(handle) {
+        const cursors = {
+            'nw': 'nw-resize',
+            'n': 'n-resize',
+            'ne': 'ne-resize',
+            'e': 'e-resize',
+            'se': 'se-resize',
+            's': 's-resize',
+            'sw': 'sw-resize',
+            'w': 'w-resize'
+        };
+        return cursors[handle] || 'default';
+    }
+    
+    isInsideSelection(x, y) {
+        if (!this.cropArea) return false;
+        return x >= this.cropArea.x &&
+               x <= this.cropArea.x + this.cropArea.width &&
+               y >= this.cropArea.y &&
+               y <= this.cropArea.y + this.cropArea.height;
+    }
+    
+    resizeSelection(currentX, currentY) {
+        const minSize = 20;
+        let {x, y, width, height} = this.initialCropArea;
+        
+        switch (this.resizeHandle) {
+            case 'nw':
+                width = Math.max(minSize, x + width - currentX);
+                height = Math.max(minSize, y + height - currentY);
+                x = Math.min(currentX, x + this.initialCropArea.width - minSize);
+                y = Math.min(currentY, y + this.initialCropArea.height - minSize);
+                break;
+            case 'n':
+                height = Math.max(minSize, y + height - currentY);
+                y = Math.min(currentY, y + this.initialCropArea.height - minSize);
+                break;
+            case 'ne':
+                width = Math.max(minSize, currentX - x);
+                height = Math.max(minSize, y + height - currentY);
+                y = Math.min(currentY, y + this.initialCropArea.height - minSize);
+                break;
+            case 'e':
+                width = Math.max(minSize, currentX - x);
+                break;
+            case 'se':
+                width = Math.max(minSize, currentX - x);
+                height = Math.max(minSize, currentY - y);
+                break;
+            case 's':
+                height = Math.max(minSize, currentY - y);
+                break;
+            case 'sw':
+                width = Math.max(minSize, x + width - currentX);
+                height = Math.max(minSize, currentY - y);
+                x = Math.min(currentX, x + this.initialCropArea.width - minSize);
+                break;
+            case 'w':
+                width = Math.max(minSize, x + width - currentX);
+                x = Math.min(currentX, x + this.initialCropArea.width - minSize);
+                break;
+        }
+        
+        // Keep within canvas bounds
+        x = Math.max(0, x);
+        y = Math.max(0, y);
+        width = Math.min(width, this.cropCanvas.width - x);
+        height = Math.min(height, this.cropCanvas.height - y);
+        
+        this.cropArea = {x, y, width, height};
+        this.redrawSelection();
     }
     
     async scanCroppedArea() {
